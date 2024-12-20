@@ -71,6 +71,10 @@ class TargetOnKart(luigi.Target):
     def _path(self) -> str:
         pass
 
+    @abstractmethod
+    def _set_metadata(self, metadata: dict[str, str]) -> None:
+        pass
+
 
 class SingleFileTarget(TargetOnKart):
     def __init__(
@@ -105,6 +109,12 @@ class SingleFileTarget(TargetOnKart):
 
     def _path(self) -> str:
         return self._target.path
+
+    def _set_metadata(self, metadata: dict[str, str]) -> None:
+        if hasattr(self._target, 'set_metadata'):
+            self._target.set_metadata(metadata)
+        else:
+            raise NotImplementedError('_set_metadata is not implemented for SingleFileTarget.')
 
 
 class ModelTarget(TargetOnKart):
@@ -162,6 +172,9 @@ class ModelTarget(TargetOnKart):
 
     def _make_temporary_directory(self):
         os.makedirs(self._temporary_directory, exist_ok=True)
+
+    def _set_metadata(self, metadata: dict[str, str]) -> None:
+        raise NotImplementedError('_set_metadata is not implemented for ModelTarget.')
 
 
 class LargeDataFrameProcessor(object):
