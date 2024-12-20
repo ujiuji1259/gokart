@@ -335,16 +335,20 @@ class TaskOnKart(luigi.Task, Generic[T]):
         return data
 
     @overload
-    def dump(self, obj: T, target: None = None) -> None: ...
+    def dump(self, obj: T, target: None = None, metadata: Optional[dict[str, str]] = None) -> None: ...
 
     @overload
-    def dump(self, obj: Any, target: Union[str, TargetOnKart]) -> None: ...
+    def dump(self, obj: Any, target: Union[str, TargetOnKart], metadata: Optional[dict[str, str]] = None) -> None: ...
 
-    def dump(self, obj: Any, target: Union[None, str, TargetOnKart] = None) -> None:
+    def dump(self, obj, target: Union[None, str, TargetOnKart] = None, metadata: Optional[dict[str, str]] = None) -> None:
         PandasTypeConfigMap().check(obj, task_namespace=self.task_namespace)
         if self.fail_on_empty_dump and isinstance(obj, pd.DataFrame):
             assert not obj.empty
-        self._get_output_target(target).dump(obj, lock_at_dump=self._lock_at_dump)
+        output_target = self._get_output_target(target)
+        output_target.dump(obj, lock_at_dump=self._lock_at_dump)
+
+        if metadata is not None and output_target.exists():
+            output_target.set_metadata(metadata)
 
     @staticmethod
     def get_code(target_class) -> Set[str]:
