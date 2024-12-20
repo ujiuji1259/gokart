@@ -6,6 +6,7 @@ import luigi.contrib.s3
 from luigi.format import Format
 
 from gokart.gcs_config import GCSConfig
+from gokart.gcs_target import GCSWithMetaDataTarget
 from gokart.gcs_zip_client import GCSZipClient
 from gokart.s3_config import S3Config
 from gokart.s3_zip_client import S3ZipClient
@@ -27,7 +28,7 @@ class ObjectStorage(object):
         if path.startswith('s3://'):
             return luigi.contrib.s3.S3Target(path, client=S3Config().get_s3_client(), format=format)
         elif path.startswith('gs://'):
-            return luigi.contrib.gcs.GCSTarget(path, client=GCSConfig().get_gcs_client(), format=format)
+            return GCSWithMetaDataTarget(path, client=GCSConfig().get_gcs_client(), format=format)
         else:
             raise
 
